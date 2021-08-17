@@ -25,5 +25,10 @@ public class StudentController {
                           .findFirst()
                           .orElseThrow(() -> new IllegalArgumentException("Student "+studentId+ " doesn't exist"));
     }
+
+    @GetMapping()
+    public List<Student> getStuent(){
+        return student;
+    }
 }
 
