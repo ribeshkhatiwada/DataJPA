@@ -3,6 +3,8 @@ package com.example.demo.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -14,6 +16,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     private final PasswordEncoder passwordEncoder;
     @Autowired
@@ -24,9 +27,10 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-        .authorizeRequests()
-                .antMatchers("/","index")
-                .permitAll()
+                .csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/","index").permitAll()
+                .antMatchers("/api/**").hasRole(ApplicationUserRole.ADMIN.name())
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -39,8 +43,21 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
        UserDetails jamesbond = User.builder()
                 .username("jamesbond")
                 .password(passwordEncoder.encode("password"))
-                .roles("STUDENT")
+               .authorities(ApplicationUserRole.STUDENT.getGrantedAuthority())
+               //.roles(ApplicationUserRole.STUDENT.name())
                .build();
-       return new InMemoryUserDetailsManager(jamesbond);
+        UserDetails ribesh =User.builder()
+               .username("ribesh")
+               .password(passwordEncoder.encode("password"))
+                .authorities(ApplicationUserRole.ADMIN.getGrantedAuthority())
+               //.roles(ApplicationUserRole.ADMIN.name())
+               .build();
+        UserDetails tom = User.builder()
+                .username("tom")
+                .password(passwordEncoder.encode("password"))
+                .authorities(ApplicationUserRole.ADMINTRAINEE.getGrantedAuthority())
+                //.roles(ApplicationUserRole.ADMINTRAINEE.name())
+                .build();
+       return new InMemoryUserDetailsManager(jamesbond,ribesh,tom);
     }
 }
